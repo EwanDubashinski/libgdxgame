@@ -17,8 +17,24 @@ public class Asteroid {
     private int bonus;
     private Polygon polygon;
 
+    public float getSpeed() {
+        return speed;
+    }
+
+    public float getRotationSpeed() {
+        return rotationSpeed;
+    }
+
     public Polygon getRect() {
         return polygon;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    public void setRotationSpeed(float rotationSpeed) {
+        this.rotationSpeed = rotationSpeed;
     }
 
     public Asteroid() {
@@ -76,7 +92,7 @@ public class Asteroid {
         position = new Vector2((float) (Math.random() * Gdx.graphics.getWidth()),
                 Gdx.graphics.getHeight() + (float) Math.random() * Gdx.graphics.getHeight() + 200);
         speed = (2.0f + (float) Math.random() * 4.0f);
-        rotationSpeed = (float) Math.random() * 6.0f - 3;
+        //rotationSpeed = (float) Math.random() * 6.0f - 3;
         angle = (float)Math.random() * 360;
         scale = 0.5f + (float)Math.random();
         //scale = 1;

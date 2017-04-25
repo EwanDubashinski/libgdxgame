@@ -127,6 +127,13 @@ public class AsteroidParty extends ApplicationAdapter {
 					bullets[i].update();
 			}
 			for (int i = 0; i < asteroids.length; i++) {
+				for (int j = 0; j < ASTEROID_COUNT; j++) {
+					if (Intersector.overlapConvexPolygons(asteroids[i].getRect(), asteroids[j].getRect())) {
+						float speed = asteroids[i].getSpeed();
+						asteroids[i].setSpeed(asteroids[j].getSpeed());
+						asteroids[j].setSpeed(speed);
+					}
+				}
 				for (int j = 0; j < bullets.length; j++) {
 //					if (asteroids[i].getRect().overlaps(bullets[j].getRect())) {
 //						if (bullets[j].isActive()) {
