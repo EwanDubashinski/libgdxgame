@@ -8,8 +8,10 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 
@@ -20,7 +22,7 @@ public class AsteroidParty extends ApplicationAdapter {
 //	boolean multiTouch = Gdx.input.isPeripheralAvailable(Input.Peripheral.MultitouchScreen);
 	ShapeRenderer shapeRenderer;
 
-	final int ASTEROID_COUNT = 10;
+	final int ASTEROID_COUNT = 40;
 	SpriteBatch batch;
 	Background bg;
 	Hero hero;
@@ -56,6 +58,8 @@ public class AsteroidParty extends ApplicationAdapter {
 		for (int i = 0; i < asteroids.length; i++) {
 			asteroids[i] = new Asteroid();
 		}
+		processingAsteroids();
+
 		bullets = new Bullet[5];
 		for (int i = 0; i < bullets.length; i++) {
 			bullets[i] = new Bullet();
@@ -63,6 +67,15 @@ public class AsteroidParty extends ApplicationAdapter {
 		startNew = false;
 		menu.setMode(GameMode.RUN);
 	}
+
+//	public boolean getIntersection(Polygon polygon) {
+//		for (int i = 0; i < ASTEROID_COUNT; i++) {
+//			if (Intersector.overlapConvexPolygons(asteroids[i].getRect(), polygon)) {
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
 
 	@Override
 	public void render() {
@@ -107,6 +120,55 @@ public class AsteroidParty extends ApplicationAdapter {
 		stage.draw();
 	}
 
+	private void intersect(int ast1){
+		for (int ast2 = 0; ast2 < ASTEROID_COUNT; ast2++) {
+			if (ast1 == ast2) return;
+			if (Intersector.overlapConvexPolygons(asteroids[ast1].getRect(), asteroids[ast2].getRect())) {
+				if (!asteroids[ast1].inContact(ast2) && !asteroids[ast2].inContact(ast1)) {
+//					float speed = asteroids[ast1].getSpeed();
+//					asteroids[ast1].setSpeed(asteroids[ast2].getSpeed());
+//					asteroids[ast2].setSpeed(speed);
+					boom(ast1, ast2);
+					asteroids[ast1].addContact(ast2);
+					asteroids[ast2].addContact(ast1);
+				}
+			} else {
+				if (asteroids[ast1].inContact(ast2)) {
+					asteroids[ast1].delContact(ast2);
+					asteroids[ast2].delContact(ast1);
+				}
+			}
+		}
+	}
+
+	private void boom(int a1, int a2){
+		float v1 = asteroids[a1].getSpeed();
+		float v2 = asteroids[a2].getSpeed();
+		float v1n;
+		float v2n;
+		float m1 = asteroids[a1].getMass();
+		float m2 = asteroids[a2].getMass();
+		v1n = (2*m2*v2 + (m1-m2)*v1)/(m1+m2);
+		v2n = (2*m1*v1 + (m2-m1)*v2)/(m1+m2);
+		asteroids[a1].setSpeed(v1n);
+		asteroids[a2].setSpeed(v2n);
+
+	}
+
+	private void processingAsteroids(){
+		for (int i = 0; i < ASTEROID_COUNT; i++) {
+			if (asteroids[i].isNeedsReCreate()){
+				do {
+					asteroids[i].recreate();
+					intersect(i);
+				} while (asteroids[i].inContact());
+			} else {
+				intersect(i);
+			}
+			asteroids[i].update();
+		}
+	}
+
 	public void update() {
 		menu.update();
 		if (startNew) reStart();
@@ -117,23 +179,14 @@ public class AsteroidParty extends ApplicationAdapter {
 				pause = true;
 				menu.setMode(GameMode.PAUSE);
 			}
-
 			hero.update();
-			for (int i = 0; i < ASTEROID_COUNT; i++) {
-				asteroids[i].update();
-			}
+			processingAsteroids();
 			for (int i = 0; i < bullets.length; i++) {
 				if (bullets[i].isActive())
 					bullets[i].update();
 			}
 			for (int i = 0; i < asteroids.length; i++) {
-				for (int j = 0; j < ASTEROID_COUNT; j++) {
-					if (Intersector.overlapConvexPolygons(asteroids[i].getRect(), asteroids[j].getRect())) {
-						float speed = asteroids[i].getSpeed();
-						asteroids[i].setSpeed(asteroids[j].getSpeed());
-						asteroids[j].setSpeed(speed);
-					}
-				}
+
 				for (int j = 0; j < bullets.length; j++) {
 //					if (asteroids[i].getRect().overlaps(bullets[j].getRect())) {
 //						if (bullets[j].isActive()) {
@@ -151,7 +204,7 @@ public class AsteroidParty extends ApplicationAdapter {
 			}
 
 			hitpoints.setText("Health: " + hero.getHp());
-			exp.setText("Experience: " + hero.getExp());
+			//exp.setText("Experience: " + hero.getExp());
 		}
 	}
 }
