@@ -8,8 +8,12 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import ru.chufeng.asteroidparty.input.EVENT;
 
-public class Hero {
+import java.util.Observable;
+import java.util.Observer;
+
+public class Hero implements Observer {
     private Vector2 position;
     float speed;
     private Texture texture;
@@ -66,40 +70,44 @@ public class Hero {
     public void shapeRender(ShapeRenderer shapeRenderer){
         shapeRenderer.polygon(polygon.getTransformedVertices());
     }
-
-    public void update() {
-        if (isAlive) {
-            if(Gdx.input.isKeyPressed(Input.Keys.UP)) {
-                if(position.y < Gdx.graphics.getHeight() - 100) position.y += speed;
-            }
-            if(Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-                if(position.y > 50) position.y -= speed;
-            }
-            if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
-                if (position.x > 50) position.x -= speed;
-
-            if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))
-                if (position.x < Gdx.graphics.getWidth() - 100) position.x += speed;
-
-            if(Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
-                firetimer++;
-                if(firetimer > FIRE_RATE) {
-                    firetimer = 0;
-                    for (int i = 0; i < AsteroidParty.bullets.length; i++) {
-                        if(!AsteroidParty.bullets[i].isActive()) {
-                            AsteroidParty.bullets[i].setup(position.x, position.y);
-                            break;
-                        }
-                    }
-                }
-            }
-            polygon.setPosition(position.x+texture.getWidth()/2, position.y);
-        }
-        else {
+    public void deadUpdate(){
+        if (!isAlive) {
             angle++;
             position.x += (int) (speed / 3);
             position.y -= (int) (speed / 2);
             endGame = true;
+        }
+    }
+    @Override
+    public void update(Observable o, Object arg) {
+        if (isAlive && arg instanceof EVENT) {
+            EVENT event = (EVENT) arg;
+            switch (event) {
+                case UP:
+                    if (position.y < Gdx.graphics.getHeight() - 100) position.y += speed;
+                    break;
+                case DOWN:
+                    if (position.y > 50) position.y -= speed;
+                    break;
+                case LEFT:
+                    if (position.x > 50) position.x -= speed;
+                    break;
+                case RIGHT:
+                    if (position.x < Gdx.graphics.getWidth() - 100) position.x += speed;
+                    break;
+                case FIRE:
+                    firetimer++;
+                    if (firetimer > FIRE_RATE) {
+                        firetimer = 0;
+                        for (int i = 0; i < AsteroidParty.bullets.length; i++) {
+                            if (!AsteroidParty.bullets[i].isActive()) {
+                                AsteroidParty.bullets[i].setup(position.x, position.y);
+                                break;
+                            }
+                        }
+                    }
+            }
+            polygon.setPosition(position.x+texture.getWidth()/2, position.y);
         }
     }
 }

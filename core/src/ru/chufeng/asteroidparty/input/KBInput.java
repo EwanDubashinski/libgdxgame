@@ -2,6 +2,7 @@ package ru.chufeng.asteroidparty.input;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import java.util.Observable;
+import java.util.Observer;
 
 /**
  * Created by Chufeng on 24.04.2017.
@@ -39,6 +40,5 @@ public class KBInput extends Observable implements Driver {
             super.notifyObservers(EVENT.PREV);
         }
     }
-
 
 }

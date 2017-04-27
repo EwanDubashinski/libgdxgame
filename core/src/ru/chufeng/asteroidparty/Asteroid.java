@@ -10,7 +10,8 @@ import java.util.ArrayList;
 
 public class Asteroid {
     private Vector2 position;
-    private float speed;
+    private float speed; // vertical speed
+    private float hSpeed; // horizontal speed
     private float rotationSpeed;
     private Texture texture;
     private float angle;
@@ -21,12 +22,24 @@ public class Asteroid {
     private ArrayList<Integer> asteroidsInContact = new ArrayList<Integer>();
     private boolean needsReCreate = true;
 
+    public Vector2 getPosition() {
+        return position;
+    }
+
     public float getSpeed() {
         return speed;
     }
 
     public int getMass() {
         return bonus;
+    }
+
+    public float getHSpeed() {
+        return hSpeed;
+    }
+
+    public void setHSpeed(float hSpeed) {
+        this.hSpeed = hSpeed;
     }
 
     public float getRotationSpeed() {
@@ -88,6 +101,7 @@ public class Asteroid {
 //        if (!needsReCreate) {
             angle += rotationSpeed;
             position.y -= speed;
+            position.x += hSpeed;
             polygon.setRotation(angle);
             polygon.setPosition(position.x + texture.getWidth() / 2, position.y + texture.getHeight() / 2);
             if (position.y < -200) {
@@ -133,7 +147,7 @@ public class Asteroid {
         speed = (2.0f + (float) Math.random() * 4.0f);
         rotationSpeed = (float) Math.random() * 6.0f - 3;
         angle = (float)Math.random() * 360;
-        scale = 0.7f + (float)Math.random()*0.5f;
+        scale = 0.7f + (float)Math.random() * 0.5f;
         //scale = 1;
         hp = (int)(scale * texture.getHeight() * texture.getWidth() * 0.0001);
         bonus = hp;
