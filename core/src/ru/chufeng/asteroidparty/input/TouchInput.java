@@ -1,6 +1,7 @@
 package ru.chufeng.asteroidparty.input;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
@@ -19,6 +20,7 @@ public class TouchInput extends Observable implements Driver {
         this.touchpad = touchpad;
         fireButton = new Circle(Gdx.graphics.getWidth()-50, 50, 50); //TODO: hardcode
         parametrizedEvent = new ParametrizedEvent();
+        Gdx.input.setCatchBackKey(true);
     }
     public void splineRender(ShapeRenderer shapeRenderer){
         shapeRenderer.circle(Gdx.graphics.getWidth()-50, 50, 50);
@@ -54,6 +56,10 @@ public class TouchInput extends Observable implements Driver {
                 setChanged();
                 super.notifyObservers(EVENT.FIRE);
             }
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.BACK)){
+            setChanged();
+            super.notifyObservers(EVENT.PAUSE);
         }
     }
 

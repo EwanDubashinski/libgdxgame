@@ -1,12 +1,14 @@
 package ru.chufeng.asteroidparty;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
+import ru.chufeng.asteroidparty.input.EVENT;
 
-public class Menu {
+import java.util.Observable;
+import java.util.Observer;
+
+public class Menu implements Observer {
     private Texture resume;
     private Texture exit;
     private Texture newgame;
@@ -55,7 +57,12 @@ public class Menu {
                     AsteroidParty.pause = false;
                 }
             }
-            if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) && (mode == GameMode.NEW || mode == GameMode.GAMEOVER)) {
+        }
+    }
+    public void update(Observable o, Object arg) {
+        if (mode != GameMode.RUN && arg instanceof EVENT) {
+            EVENT event = (EVENT)arg;
+            if (event == EVENT.PAUSE && (mode == GameMode.NEW || mode == GameMode.GAMEOVER)) {
                 Gdx.app.exit();
             }
         }

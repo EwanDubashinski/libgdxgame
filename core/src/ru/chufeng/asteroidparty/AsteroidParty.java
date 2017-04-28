@@ -109,6 +109,7 @@ public class AsteroidParty extends ApplicationAdapter {
         }
 		hero = new Hero(bullets);
 		driver.addObserver(hero);
+		driver.addObserver(menu);
 		asteroids = new Asteroid[ASTEROID_COUNT];
 		for (int i = 0; i < asteroids.length; i++) {
 			asteroids[i] = new Asteroid();
