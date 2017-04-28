@@ -1,21 +1,20 @@
 package ru.chufeng.asteroidparty;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Polygon;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import ru.chufeng.asteroidparty.input.EVENT;
+import ru.chufeng.asteroidparty.input.ParametrizedEvent;
 
 import java.util.Observable;
 import java.util.Observer;
 
 public class Hero implements Observer {
     private Vector2 position;
-    float speed;
+    private float speed;
     private Texture texture;
     private int firetimer;
     private final int FIRE_RATE = 9;
@@ -24,6 +23,7 @@ public class Hero implements Observer {
     boolean endGame = false;
     private int angle = 0;
     private Polygon polygon;
+    private Bullet[] bullets;
 
     public int getExp() {
         return exp;
@@ -39,7 +39,8 @@ public class Hero implements Observer {
 
     private int hp;
 
-    public Hero() {
+    public Hero(Bullet[] bullets) {
+        this.bullets = bullets;
         position = new Vector2((float)Gdx.graphics.getWidth()/2, 100.0f);
         speed = 6.0f;
         texture = new Texture("T50.png");
@@ -80,34 +81,45 @@ public class Hero implements Observer {
     }
     @Override
     public void update(Observable o, Object arg) {
-        if (isAlive && arg instanceof EVENT) {
-            EVENT event = (EVENT) arg;
-            switch (event) {
+        if (isAlive) {
+            float percent;
+            EVENT event;
+            if (arg instanceof ParametrizedEvent) {
+                 percent = ((ParametrizedEvent)arg).getParam();
+                 event = ((ParametrizedEvent)arg).getEvent();
+            } else if (arg instanceof EVENT) {
+                percent = 1;
+                event = (EVENT)arg;
+            } else return;
+            switch (event) { //TODO: hardcode
                 case UP:
-                    if (position.y < Gdx.graphics.getHeight() - 100) position.y += speed;
+                    if (position.y < Gdx.graphics.getHeight() - 100) position.y += speed*percent;
                     break;
                 case DOWN:
-                    if (position.y > 50) position.y -= speed;
+                    if (position.y > 50) position.y -= speed*percent;
                     break;
                 case LEFT:
-                    if (position.x > 50) position.x -= speed;
+                    if (position.x > 50) position.x -= speed*percent;
                     break;
                 case RIGHT:
-                    if (position.x < Gdx.graphics.getWidth() - 100) position.x += speed;
+                    if (position.x < Gdx.graphics.getWidth() - 100) position.x += speed*percent;
                     break;
                 case FIRE:
-                    firetimer++;
-                    if (firetimer > FIRE_RATE) {
-                        firetimer = 0;
-                        for (int i = 0; i < AsteroidParty.bullets.length; i++) {
-                            if (!AsteroidParty.bullets[i].isActive()) {
-                                AsteroidParty.bullets[i].setup(position.x, position.y);
-                                break;
+                        firetimer++;
+                        if (firetimer > FIRE_RATE) {
+                            firetimer = 0;
+                            for (int i = 0; i < bullets.length; i++) {
+                                if (!bullets[i].isActive()) {
+                                    bullets[i].setup(position.x, position.y);
+                                    break;
+                                }
                             }
                         }
                     }
+
             }
             polygon.setPosition(position.x+texture.getWidth()/2, position.y);
+
         }
     }
-}
+

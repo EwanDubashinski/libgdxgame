@@ -3,48 +3,56 @@ package ru.chufeng.asteroidparty;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g3d.environment.PointLight;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 import ru.chufeng.asteroidparty.input.Driver;
 import ru.chufeng.asteroidparty.input.KBInput;
-
-import java.util.Observable;
-
+import ru.chufeng.asteroidparty.input.TouchInput;
 
 public class AsteroidParty extends ApplicationAdapter {
-    //Определимся с железом
-//	boolean hardwareKeyboard = Gdx.input.isPeripheralAvailable(Input.Peripheral.HardwareKeyboard);
-//	boolean multiTouch = Gdx.input.isPeripheralAvailable(Input.Peripheral.MultitouchScreen);
+	boolean hardwareKeyboard;
+	boolean multiTouch;
 	ShapeRenderer shapeRenderer;
 	private boolean showPolygons = false;
-	//private Observable updater = new Observable();
-
 	final int ASTEROID_COUNT = 40;
-	SpriteBatch batch;
-	Background bg;
-	Hero hero;
-	Asteroid[] asteroids;
-	public static Bullet[] bullets;
-	Stage stage;
-	Label hitpoints;
-	Label exp;
-	Driver driver;
+    private SpriteBatch batch;
+    private Background bg;
+    private Hero hero;
+    private Asteroid[] asteroids;
+	private Bullet[] bullets;
+    private Stage stage;
+    private Label hitpoints;
+    private Label exp;
+    private Driver driver;
 	static boolean pause = false;
 	static boolean startNew = false;
-	Menu menu;
-	static Texture go;
+    private Menu menu;
+	private Texture go;
+    private Image fireImage;
+    private Touchpad touchpad;
+    private AssetManager assetManager;
 	@Override
 	public void create() {
-		driver = new KBInput();
+        hardwareKeyboard = Gdx.input.isPeripheralAvailable(Input.Peripheral.HardwareKeyboard);
+        multiTouch = Gdx.input.isPeripheralAvailable(Input.Peripheral.MultitouchScreen);
+//        hardwareKeyboard = false;
+//        multiTouch = true;
+
+		assetManager = new AssetManager();
+		assetManager.load("gameover.png", Texture.class);
+		if (!hardwareKeyboard) assetManager.load("fire.png", Texture.class);
+
 		menu = new Menu();
 		menu.setMode(GameMode.NEW);
 		batch = new SpriteBatch();
@@ -56,12 +64,50 @@ public class AsteroidParty extends ApplicationAdapter {
 		stage = new Stage();
 		stage.addActor(hitpoints);
 		stage.addActor(exp);
-		go = new Texture("gameover.png");
+		assetManager.finishLoading();
+        go = assetManager.get("gameover.png", Texture.class);
+
+//        fireImage = new Image(assetManager.get("fire.png", Texture.class));
+//        fireImage.setPosition(Gdx.graphics.getWidth()-100, 0);
+//        fireImage.setVisible(false);
+//        stage.addActor(fireImage);
 
 		shapeRenderer = new ShapeRenderer();
+
+
+        if (hardwareKeyboard) {
+            driver = new KBInput();
+        } else if (multiTouch) {
+            fireImage = new Image(assetManager.get("fire.png", Texture.class));
+            fireImage.setPosition(Gdx.graphics.getWidth()-100, 0);
+            fireImage.setVisible(false);
+            stage.addActor(fireImage);
+
+            Skin touchpadSkin= new Skin();
+            touchpadSkin.add("touchBackground", new Texture("touchBG.png"));
+            touchpadSkin.add("touchKnob", new Texture("touchKnob.png"));
+            Touchpad.TouchpadStyle style = new Touchpad.TouchpadStyle();
+            style.background = touchpadSkin.getDrawable("touchBackground");
+            style.knob = touchpadSkin.getDrawable("touchKnob");
+            //TODO: hardcode.
+            touchpad = new Touchpad(20, style);
+            touchpad.setBounds(15, 15, 300, 300);
+            stage.addActor(touchpad);
+            Gdx.input.setInputProcessor(stage);
+            touchpad.setVisible(false);
+            driver = new TouchInput(touchpad);
+
+
+        } else Gdx.app.exit();
+
+
 	}
 	private void reStart(){
-		hero = new Hero();
+        bullets = new Bullet[5];
+        for (int i = 0; i < bullets.length; i++) {
+            bullets[i] = new Bullet();
+        }
+		hero = new Hero(bullets);
 		driver.addObserver(hero);
 		asteroids = new Asteroid[ASTEROID_COUNT];
 		for (int i = 0; i < asteroids.length; i++) {
@@ -69,12 +115,13 @@ public class AsteroidParty extends ApplicationAdapter {
 		}
 		processingAsteroids();
 
-		bullets = new Bullet[5];
-		for (int i = 0; i < bullets.length; i++) {
-			bullets[i] = new Bullet();
-		}
+
 		startNew = false;
 		menu.setMode(GameMode.RUN);
+		if (multiTouch) {
+		    touchpad.setVisible(true);
+            fireImage.setVisible(true);
+		}
 	}
 
 //	public boolean getIntersection(Polygon polygon) {
@@ -101,8 +148,6 @@ public class AsteroidParty extends ApplicationAdapter {
 				if (bullets[i].isActive())
 					bullets[i].render(batch);
 			}
-
-
 		}
 		if (menu.getMode() == GameMode.GAMEOVER) batch.draw(go, Gdx.graphics.getWidth()/2 - 200, Gdx.graphics.getHeight()/2 - 50);
         menu.render(batch);
@@ -126,6 +171,7 @@ public class AsteroidParty extends ApplicationAdapter {
 				if (bullets[i].isActive())
 					bullets[i].shapeRender(shapeRenderer);
 			}
+            if (driver instanceof TouchInput) ((TouchInput)driver).splineRender(shapeRenderer);
 			shapeRenderer.setColor(Color.RED);
 			shapeRenderer.end();
 		}
@@ -174,7 +220,7 @@ public class AsteroidParty extends ApplicationAdapter {
 			asteroids[a1].setHSpeed(1);
 		}
 		rs1n = (2*m2*rs2 + (m1-m2)*rs1)/(m1+m2);
-		rs2n = (2*m1*rs1 + (m2-m1)*rs2)/(m1+m2);
+		rs2n = -(2*m1*rs1 + (m2-m1)*rs2)/(m1+m2);
 		asteroids[a1].setRotationSpeed(rs1n*0.9f);
 		asteroids[a2].setRotationSpeed(rs2n*0.9f);
 	}
@@ -224,12 +270,17 @@ public class AsteroidParty extends ApplicationAdapter {
 					hero.getDamage(1);
 					if (hero.endGame) {
 						menu.setMode(GameMode.GAMEOVER);
+                        if (multiTouch) {
+                            touchpad.setVisible(false);
+                            fireImage.setVisible(false);
+                        }
 					}
 				}
 			}
 
 			hitpoints.setText("Health: " + hero.getHp());
 			exp.setText("Experience: " + hero.getExp());
+			//exp.setText(touchpad.getKnobPercentX() + " " + touchpad.getKnobPercentY());
 		}
 	}
 }

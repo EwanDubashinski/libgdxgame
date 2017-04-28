@@ -39,6 +39,10 @@ public class KBInput extends Observable implements Driver {
             setChanged();
             super.notifyObservers(EVENT.PREV);
         }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            setChanged();
+            super.notifyObservers(EVENT.PAUSE);
+        }
     }
 
 }
