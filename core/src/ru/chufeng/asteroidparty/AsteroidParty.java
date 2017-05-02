@@ -4,6 +4,8 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -11,6 +13,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -21,11 +24,13 @@ import ru.chufeng.asteroidparty.input.KBInput;
 import ru.chufeng.asteroidparty.input.TouchInput;
 
 public class AsteroidParty extends ApplicationAdapter {
-	boolean hardwareKeyboard;
-	boolean multiTouch;
-	ShapeRenderer shapeRenderer;
-	private boolean showPolygons = false;
-	final int ASTEROID_COUNT = 40;
+    static boolean pause = false;
+    static boolean startNew = false;
+    private final int ASTEROID_COUNT = 40;
+    private boolean hardwareKeyboard;
+    private boolean multiTouch;
+    private ShapeRenderer shapeRenderer;
+    private boolean showPolygons = false;
     private SpriteBatch batch;
     private Background bg;
     private Hero hero;
@@ -35,15 +40,17 @@ public class AsteroidParty extends ApplicationAdapter {
     private Label hitpoints;
     private Label exp;
     private Driver driver;
-	static boolean pause = false;
-	static boolean startNew = false;
     private Menu menu;
 	private Texture go;
     private Image fireImage;
     private Touchpad touchpad;
     private AssetManager assetManager;
-	@Override
-	public void create() {
+    private Sound explode;
+    private Music music;
+    private float maxY;
+
+    @Override
+    public void create() {
         hardwareKeyboard = Gdx.input.isPeripheralAvailable(Input.Peripheral.HardwareKeyboard);
         multiTouch = Gdx.input.isPeripheralAvailable(Input.Peripheral.MultitouchScreen);
 //        hardwareKeyboard = false;
@@ -66,6 +73,7 @@ public class AsteroidParty extends ApplicationAdapter {
 		stage.addActor(exp);
 		assetManager.finishLoading();
         go = assetManager.get("gameover.png", Texture.class);
+        maxY = Gdx.graphics.getHeight() * 2 + 200;
 
 //        fireImage = new Image(assetManager.get("fire.png", Texture.class));
 //        fireImage.setPosition(Gdx.graphics.getWidth()-100, 0);
@@ -73,13 +81,19 @@ public class AsteroidParty extends ApplicationAdapter {
 //        stage.addActor(fireImage);
 
 		shapeRenderer = new ShapeRenderer();
-
+        explode = Gdx.audio.newSound(Gdx.files.internal("explode.ogg"));
+        music = Gdx.audio.newMusic(Gdx.files.internal("music2.ogg"));
+        music.setLooping(true);
+        music.setVolume(0.6f);
+        music.play();
 
         if (hardwareKeyboard) {
             driver = new KBInput();
         } else if (multiTouch) {
             fireImage = new Image(assetManager.get("fire.png", Texture.class));
-            fireImage.setPosition(Gdx.graphics.getWidth()-100, 0);
+            float fbSize = Gdx.graphics.getWidth() / 7.0f;
+            fireImage.setSize(fbSize, fbSize);
+            fireImage.setPosition(Gdx.graphics.getWidth() - fbSize, 0);
             fireImage.setVisible(false);
             stage.addActor(fireImage);
 
@@ -89,9 +103,8 @@ public class AsteroidParty extends ApplicationAdapter {
             Touchpad.TouchpadStyle style = new Touchpad.TouchpadStyle();
             style.background = touchpadSkin.getDrawable("touchBackground");
             style.knob = touchpadSkin.getDrawable("touchKnob");
-            //TODO: hardcode.
             touchpad = new Touchpad(20, style);
-            touchpad.setBounds(15, 15, 300, 300);
+            touchpad.setBounds(15, 15, Gdx.graphics.getWidth() / 5.0f, Gdx.graphics.getWidth() / 5.0f);
             stage.addActor(touchpad);
             Gdx.input.setInputProcessor(stage);
             touchpad.setVisible(false);
@@ -145,12 +158,12 @@ public class AsteroidParty extends ApplicationAdapter {
 			for (int i = 0; i < ASTEROID_COUNT; i++) {
 				asteroids[i].render(batch);
 			}
-			for (int i = 0; i < bullets.length; i++) {
-				if (bullets[i].isActive())
-					bullets[i].render(batch);
-			}
-		}
-		if (menu.getMode() == GameMode.GAMEOVER) batch.draw(go, Gdx.graphics.getWidth()/2 - 200, Gdx.graphics.getHeight()/2 - 50);
+            for (Bullet bullet : bullets) {
+                if (bullet.isActive())
+                    bullet.render(batch);
+            }
+        }
+        if (menu.getMode() == GameMode.GAMEOVER) batch.draw(go, Gdx.graphics.getWidth()/2 - 200, Gdx.graphics.getHeight()/2 - 50);
         menu.render(batch);
 		if (!pause) {
 			update();
@@ -168,10 +181,10 @@ public class AsteroidParty extends ApplicationAdapter {
 				asteroids[i].splineRender(shapeRenderer);
 			}
 			hero.shapeRender(shapeRenderer);
-			for (int i = 0; i < bullets.length; i++) {
-				if (bullets[i].isActive())
-					bullets[i].shapeRender(shapeRenderer);
-			}
+            for (Bullet bullet : bullets) {
+                if (bullet.isActive())
+                    bullet.shapeRender(shapeRenderer);
+            }
             if (driver instanceof TouchInput) ((TouchInput)driver).splineRender(shapeRenderer);
 			shapeRenderer.setColor(Color.RED);
 			shapeRenderer.end();
@@ -199,9 +212,10 @@ public class AsteroidParty extends ApplicationAdapter {
 	}
 
 	private void boom(int a1, int a2){
-		float v1 = asteroids[a1].getSpeed();
-		float v2 = asteroids[a2].getSpeed();
-		float v1n;
+        explode.play(asteroids[a1].getPosition().y / maxY);
+        float v1 = asteroids[a1].getSpeed();
+        float v2 = asteroids[a2].getSpeed();
+        float v1n;
 		float v2n;
 		float m1 = asteroids[a1].getMass();
 		float m2 = asteroids[a2].getMass();
@@ -250,38 +264,46 @@ public class AsteroidParty extends ApplicationAdapter {
 				pause = true;
 				menu.setMode(GameMode.PAUSE);
 			}
-			driver.update();
-            hero.deadUpdate();
-			processingAsteroids();
-			for (int i = 0; i < bullets.length; i++) {
-				if (bullets[i].isActive())
-					bullets[i].update();
-			}
-			for (int i = 0; i < asteroids.length; i++) {
+            hero.immediateUpdate();
+            driver.update();
 
-				for (int j = 0; j < bullets.length; j++) {
-					if (Intersector.overlapConvexPolygons(asteroids[i].getRect(), bullets[j].getRect())) {
-						if (bullets[j].isActive()) {
-							asteroids[i].damage(hero);
-							bullets[j].destroy();
-						}
-					}
-				}
-				if (Intersector.overlapConvexPolygons(asteroids[i].getRect(), hero.getRect())) {
-					hero.getDamage(1);
-					if (hero.endGame) {
-						menu.setMode(GameMode.GAMEOVER);
+			processingAsteroids();
+            for (Bullet bullet : bullets) {
+                if (bullet.isActive())
+                    bullet.update();
+            }
+            for (Asteroid asteroid : asteroids) {
+
+                for (Bullet bullet : bullets) {
+                    if (Intersector.overlapConvexPolygons(asteroid.getRect(), bullet.getRect())) {
+                        if (bullet.isActive()) {
+                            asteroid.damage(hero);
+
+                            bullet.destroy();
+                        }
+                    }
+                }
+                if (Intersector.overlapConvexPolygons(asteroid.getRect(), hero.getRect())) {
+                    hero.getDamage(1);
+                    Vector2 posA = new Vector2(asteroid.getRect().getX(), asteroid.getRect().getY());
+                    Vector2 posH = new Vector2(hero.getRect().getX(), hero.getRect().getY());
+                    if (posA.x > posH.x) hero.setMomentumX(-5);
+                    else hero.setMomentumX(5);
+                    if (posA.y > posH.y) hero.setMomentumY(-5);
+                    else hero.setMomentumY(5);
+                    if (hero.isEndGame()) {
+                        menu.setMode(GameMode.GAMEOVER);
                         if (multiTouch) {
                             touchpad.setVisible(false);
                             fireImage.setVisible(false);
                         }
-					}
-				}
-			}
+                    }
+                }
+            }
 
 			hitpoints.setText("Health: " + hero.getHp());
-			exp.setText("Experience: " + hero.getExp());
-			//exp.setText(touchpad.getKnobPercentX() + " " + touchpad.getKnobPercentY());
-		}
-	}
+            //exp.setText("Experience: " + hero.getExp());
+            exp.setText(" " + hero.getScaleX());
+        }
+    }
 }

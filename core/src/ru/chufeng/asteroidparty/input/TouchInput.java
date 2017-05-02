@@ -9,21 +9,25 @@ import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
 import java.util.Observable;
 
 /**
- * Created by Chufeng on 24.04.2017.
+ * @author Chufeng
+ * @version 1.0
  */
 public class TouchInput extends Observable implements Driver {
     private Touchpad touchpad;
-    private TouchInput(){}//Hide default constructor
     private Circle fireButton;
     private ParametrizedEvent parametrizedEvent;
+    private float fbRadius = Gdx.graphics.getWidth() / 14.0f;
+
+    private TouchInput() {
+    }//Hide default constructor
     public TouchInput(Touchpad touchpad){
         this.touchpad = touchpad;
-        fireButton = new Circle(Gdx.graphics.getWidth()-50, 50, 50); //TODO: hardcode
+        fireButton = new Circle(Gdx.graphics.getWidth() - fbRadius, fbRadius, fbRadius);
         parametrizedEvent = new ParametrizedEvent();
         Gdx.input.setCatchBackKey(true);
     }
     public void splineRender(ShapeRenderer shapeRenderer){
-        shapeRenderer.circle(Gdx.graphics.getWidth()-50, 50, 50);
+        shapeRenderer.circle(Gdx.graphics.getWidth() - fbRadius, fbRadius, fbRadius);
     }
     @Override
     public void update() {

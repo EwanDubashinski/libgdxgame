@@ -1,14 +1,22 @@
 package ru.chufeng.asteroidparty;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.math.Polygon;
+import com.badlogic.gdx.math.Vector2;
 
 import java.util.ArrayList;
 
 public class Asteroid {
+    private static Sound destroy;
+
+    static {
+        destroy = Gdx.audio.newSound(Gdx.files.internal("destroy.ogg"));
+    }
+
     private Vector2 position;
     private float speed; // vertical speed
     private float hSpeed; // horizontal speed
@@ -22,15 +30,29 @@ public class Asteroid {
     private ArrayList<Integer> asteroidsInContact = new ArrayList<Integer>();
     private boolean needsReCreate = true;
 
-    public Vector2 getPosition() {
+    Asteroid() {
+        if (texture == null) {
+            //texture = new Texture("asteroid1.png");
+            texture = new Texture("asteroid" + (int) (Math.random() * 4) + ".png");
+        }
+
+        //recreate();
+        needsReCreate = true;
+    }
+
+    Vector2 getPosition() {
         return position;
     }
 
-    public float getSpeed() {
+    float getSpeed() {
         return speed;
     }
 
-    public int getMass() {
+    void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    int getMass() {
         return bonus;
     }
 
@@ -38,58 +60,39 @@ public class Asteroid {
         return hSpeed;
     }
 
-    public void setHSpeed(float hSpeed) {
+    void setHSpeed(float hSpeed) {
         this.hSpeed = hSpeed;
     }
 
-    public float getRotationSpeed() {
+    float getRotationSpeed() {
         return rotationSpeed;
     }
 
-    public Polygon getRect() {
-        return polygon;
-    }
-
-    public void setSpeed(float speed) {
-        this.speed = speed;
-    }
-
-    public void addContact(Integer astID){
-        asteroidsInContact.add(astID);
-    }
-
-    public void delContact(Integer astID){
-        asteroidsInContact.remove(astID);
-    }
-
-    public boolean inContact(Integer astID) {
-        if (asteroidsInContact.contains(astID))
-            return true;
-        else return false;
-    }
-
-
-    public boolean inContact(){
-        if (asteroidsInContact.size() == 0) return false;
-        else return true;
-    }
-
-
-    public void setRotationSpeed(float rotationSpeed) {
+    void setRotationSpeed(float rotationSpeed) {
         this.rotationSpeed = rotationSpeed;
     }
 
-    public Asteroid() {
-        if (texture == null){
-            //texture = new Texture("asteroid1.png");
-            texture = new Texture("asteroid" + (int)(Math.random() * 4) + ".png");
-        }
-
-        //recreate();
-        needsReCreate = true;
+    Polygon getRect() {
+        return polygon;
     }
 
-    public void render(SpriteBatch batch) {
+    void addContact(Integer astID) {
+        asteroidsInContact.add(astID);
+    }
+
+    void delContact(Integer astID) {
+        asteroidsInContact.remove(astID);
+    }
+
+    boolean inContact(Integer astID) {
+        return asteroidsInContact.contains(astID);
+    }
+
+    boolean inContact() {
+        return asteroidsInContact.size() != 0;
+    }
+
+    void render(SpriteBatch batch) {
         batch.draw(texture, position.x, position.y,
                    texture.getWidth()/2, texture.getHeight()/2,
                    texture.getWidth(), texture.getHeight(), scale, scale, angle, 0, 0,
@@ -110,9 +113,10 @@ public class Asteroid {
 //        }
     }
 
-    public void damage(Hero hero){
+    void damage(Hero hero) {
         hp -= 1;
         if (hp <= 0) {
+            destroy.play();
             hero.addExp(bonus);
             recreate();
         }
@@ -131,15 +135,15 @@ public class Asteroid {
         };
     }
 
-    public void splineRender(ShapeRenderer shapeRenderer){
+    void splineRender(ShapeRenderer shapeRenderer) {
         shapeRenderer.polygon(polygon.getTransformedVertices());
     }
 
-    public boolean isNeedsReCreate() {
+    boolean isNeedsReCreate() {
         return needsReCreate;
     }
 
-    public void recreate() {
+    void recreate() {
         asteroidsInContact.clear();
         needsReCreate = false;
         position = new Vector2((float) (Math.random() * Gdx.graphics.getWidth()),
