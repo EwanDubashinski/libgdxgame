@@ -30,7 +30,7 @@ public class Hero implements Observer {
     private float momentumX;
     private float momentumY;
     private float scaleX = 1;
-    private float rotationSpeed = 3;
+    //private float rotationSpeed = 3;
     private int hp;
 
     Hero(Bullet[] bullets) {
@@ -164,7 +164,6 @@ public class Hero implements Observer {
                     //angle -= rotationSpeed;
                     break;
                 case FIRE:
-
                     firetimer++;
                     if (firetimer > FIRE_RATE) {
                         firetimer = 0;

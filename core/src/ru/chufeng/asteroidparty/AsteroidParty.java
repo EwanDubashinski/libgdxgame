@@ -138,15 +138,6 @@ public class AsteroidParty extends ApplicationAdapter {
 		}
 	}
 
-//	public boolean getIntersection(Polygon polygon) {
-//		for (int i = 0; i < ASTEROID_COUNT; i++) {
-//			if (Intersector.overlapConvexPolygons(asteroids[i].getRect(), polygon)) {
-//				return true;
-//			}
-//		}
-//		return false;
-//	}
-
 	@Override
 	public void render() {
 		Gdx.gl.glClearColor(0, 0, 0, 1); // RGBA
@@ -165,15 +156,12 @@ public class AsteroidParty extends ApplicationAdapter {
         }
         if (menu.getMode() == GameMode.GAMEOVER) batch.draw(go, Gdx.graphics.getWidth()/2 - 200, Gdx.graphics.getHeight()/2 - 50);
         menu.render(batch);
-		if (!pause) {
-			update();
+        if (menu.getMode() != GameMode.PAUSE) {
+            update();
 		} else {
 			menu.update();
-			if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-				pause = false;
-				menu.setMode(GameMode.RUN);
-			}
-		}
+            driver.update();
+        }
         batch.end();
 		if (menu.getMode() != GameMode.NEW && showPolygons) {
 			shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
@@ -260,12 +248,8 @@ public class AsteroidParty extends ApplicationAdapter {
 		bg.update();
 
 		if (menu.getMode() != GameMode.NEW) {
-			if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-				pause = true;
-				menu.setMode(GameMode.PAUSE);
-			}
             hero.immediateUpdate();
-            driver.update();
+            driver.update(); //input processing
 
 			processingAsteroids();
             for (Bullet bullet : bullets) {

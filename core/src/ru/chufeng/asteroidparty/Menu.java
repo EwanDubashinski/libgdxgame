@@ -60,10 +60,14 @@ public class Menu implements Observer {
         }
     }
     public void update(Observable o, Object arg) {
-        if (mode != GameMode.RUN && arg instanceof EVENT) {
+        if (arg instanceof EVENT) {
             EVENT event = (EVENT)arg;
             if (event == EVENT.PAUSE && (mode == GameMode.NEW || mode == GameMode.GAMEOVER)) {
                 Gdx.app.exit();
+            } else if (event == EVENT.PAUSE && mode == GameMode.RUN) {
+                setMode(GameMode.PAUSE);
+            } else if (event == EVENT.PAUSE && mode == GameMode.PAUSE) {
+                setMode(GameMode.RUN);
             }
         }
     }
