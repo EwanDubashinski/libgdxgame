@@ -68,9 +68,12 @@ public class TouchInput extends Observable implements Driver {
             //debugInfo = "inside 1st if";
             //if (fireButton.contains(Gdx.input.getX(),Gdx.graphics.getHeight() - Gdx.input.getY())){
             //debugInfo = "inside 2nd if";
-                setChanged();
-                super.notifyObservers(EVENT.FIRE);
+            setChanged();
+            super.notifyObservers(EVENT.FIRE);
             //}
+        } else {
+            setChanged();
+            super.notifyObservers(EVENT.NOFIRE);
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)) {
             setChanged();
