@@ -306,7 +306,7 @@ public class AsteroidParty extends ApplicationAdapter {
 
 			hitpoints.setText("Health: " + hero.getHp());
 			exp.setText("Experience: " + hero.getExp());
-			ammo.setText("Overheat: ");
+			ammo.setText("Overheat: " + hero.getOverheat() * 5 + "%");
 			armor.setText("Armor: " + hero.getArmor());
 			weapon.setText("Blaster");
 //            exp.setText(driver.getDebugInfo());

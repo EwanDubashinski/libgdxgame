@@ -35,7 +35,6 @@ public class Hero implements Observer {
     private int armor;
     private int overheat;
 
-
     Hero(Bullet[] bullets) {
         this.bullets = bullets;
         position = new Vector2((float) Gdx.graphics.getWidth() / 2, 100.0f);
@@ -48,6 +47,10 @@ public class Hero implements Observer {
         polygon.setVertices(new float[]{-texture.getWidth() / 2, 0, texture.getWidth() / 2, 0, 0, texture.getHeight()});
         blast = Gdx.audio.newSound(Gdx.files.internal("blast.ogg"));
         crash = Gdx.audio.newSound(Gdx.files.internal("crash.ogg"));
+    }
+
+    public int getOverheat() {
+        return overheat;
     }
 
     public int getArmor() {
@@ -175,6 +178,7 @@ public class Hero implements Observer {
                     //angle -= rotationSpeed;
                     break;
                 case FIRE:
+                    if (overheat >= 20) break;
                     firetimer++;
                     if (firetimer > FIRE_RATE) {
                         firetimer = 0;
@@ -182,11 +186,20 @@ public class Hero implements Observer {
                             if (!bullet.isActive()) {
                                 blast.play();
                                 bullet.setup(position.x, position.y);
+                                overheat++;
                                 break;
                             }
                         }
                     }
-
+                    break;
+                case NOFIRE:
+                    if (overheat <= 0) break;
+                    firetimer++;
+                    if (firetimer > FIRE_RATE) {
+                        firetimer = 0;
+                        overheat--;
+                    }
+                    break;
             }
         }
         polygon.setPosition(position.x + texture.getWidth() / 2, position.y);

@@ -9,6 +9,7 @@ public enum EVENT {
     UP,
     DOWN,
     FIRE,
+    NOFIRE,
     NEXT,
     PREV,
     PAUSE

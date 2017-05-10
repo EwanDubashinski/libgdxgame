@@ -33,6 +33,9 @@ public class KBInput extends Observable implements Driver {
         if (Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
             setChanged();
             super.notifyObservers(EVENT.FIRE);
+        } else if (!Gdx.input.isKeyPressed(Input.Keys.SPACE)) {
+            setChanged();
+            super.notifyObservers(EVENT.NOFIRE);
         }
         if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
             setChanged();
