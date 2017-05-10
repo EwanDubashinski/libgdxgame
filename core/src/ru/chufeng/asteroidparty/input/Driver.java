@@ -1,11 +1,13 @@
 package ru.chufeng.asteroidparty.input;
 
+import com.badlogic.gdx.InputProcessor;
+
 import java.util.Observer;
 
 /**
- * Created by Chufeng on 24.04.2017.
+ * @author Chufeng
  */
-public interface Driver {
+public interface Driver extends InputProcessor {
     void update();
     void addObserver(Observer o);
     void deleteObserver(Observer o);
@@ -13,4 +15,6 @@ public interface Driver {
     void notifyObservers(Object arg);
     void deleteObservers();
     int countObservers();
+
+    String getDebugInfo();
 }

@@ -3,6 +3,7 @@ package ru.chufeng.asteroidparty;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
@@ -39,7 +40,10 @@ public class AsteroidParty extends ApplicationAdapter {
     private Stage stage;
     private Label hitpoints;
     private Label exp;
-    private Driver driver;
+	private Label armor;
+	private Label ammo;
+	private Label weapon;
+	private Driver driver;
     private Menu menu;
 	private Texture go;
     private Image fireImage;
@@ -65,12 +69,26 @@ public class AsteroidParty extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		bg = new Background();
 		hitpoints = new Label("", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
-		hitpoints.setPosition(20, 20);
+		hitpoints.setFontScale(2);
+		hitpoints.setPosition(20, Gdx.graphics.getHeight() - 20);
 		exp = new Label("", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
-		exp.setPosition(20, Gdx.graphics.getHeight() - 50);
+		exp.setFontScale(2);
+		exp.setPosition(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() - 20);
+		armor = new Label("", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
+		armor.setFontScale(2);
+		armor.setPosition(20, Gdx.graphics.getHeight() - 100);
+		weapon = new Label("", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
+		weapon.setFontScale(2);
+		weapon.setPosition(Gdx.graphics.getWidth() / 2, 20);
+		ammo = new Label("", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
+		ammo.setFontScale(2);
+		ammo.setPosition(Gdx.graphics.getWidth() - 200, Gdx.graphics.getHeight() - 20);
 		stage = new Stage();
 		stage.addActor(hitpoints);
 		stage.addActor(exp);
+		stage.addActor(ammo);
+		stage.addActor(armor);
+		stage.addActor(weapon);
 		assetManager.finishLoading();
         go = assetManager.get("gameover.png", Texture.class);
         maxY = Gdx.graphics.getHeight() * 2 + 200;
@@ -106,18 +124,20 @@ public class AsteroidParty extends ApplicationAdapter {
             touchpad = new Touchpad(20, style);
             touchpad.setBounds(15, 15, Gdx.graphics.getWidth() / 5.0f, Gdx.graphics.getWidth() / 5.0f);
             stage.addActor(touchpad);
-            Gdx.input.setInputProcessor(stage);
-            touchpad.setVisible(false);
+//            Gdx.input.setInputProcessor(stage);
+			touchpad.setVisible(false);
             driver = new TouchInput(touchpad);
 
 
         } else Gdx.app.exit();
-
-
+		InputMultiplexer multiplexer = new InputMultiplexer();
+		multiplexer.addProcessor(driver);
+		multiplexer.addProcessor(stage);
+		Gdx.input.setInputProcessor(multiplexer);
 	}
 	private void reStart(){
-        bullets = new Bullet[5];
-        for (int i = 0; i < bullets.length; i++) {
+		bullets = new Bullet[15];
+		for (int i = 0; i < bullets.length; i++) {
             bullets[i] = new Bullet();
         }
 		hero = new Hero(bullets);
@@ -257,12 +277,11 @@ public class AsteroidParty extends ApplicationAdapter {
                     bullet.update();
             }
             for (Asteroid asteroid : asteroids) {
-
-                for (Bullet bullet : bullets) {
+				asteroid.setBaseSpeed(hero.getExp() / 100);
+				for (Bullet bullet : bullets) {
                     if (Intersector.overlapConvexPolygons(asteroid.getRect(), bullet.getRect())) {
                         if (bullet.isActive()) {
                             asteroid.damage(hero);
-
                             bullet.destroy();
                         }
                     }
@@ -286,8 +305,11 @@ public class AsteroidParty extends ApplicationAdapter {
             }
 
 			hitpoints.setText("Health: " + hero.getHp());
-            //exp.setText("Experience: " + hero.getExp());
-            exp.setText(" " + hero.getScaleX());
-        }
+			exp.setText("Experience: " + hero.getExp());
+			ammo.setText("Overheat: ");
+			armor.setText("Armor: " + hero.getArmor());
+			weapon.setText("Blaster");
+//            exp.setText(driver.getDebugInfo());
+		}
     }
 }

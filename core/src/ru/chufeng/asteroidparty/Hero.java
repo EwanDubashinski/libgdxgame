@@ -32,6 +32,9 @@ public class Hero implements Observer {
     private float scaleX = 1;
     //private float rotationSpeed = 3;
     private int hp;
+    private int armor;
+    private int overheat;
+
 
     Hero(Bullet[] bullets) {
         this.bullets = bullets;
@@ -45,6 +48,14 @@ public class Hero implements Observer {
         polygon.setVertices(new float[]{-texture.getWidth() / 2, 0, texture.getWidth() / 2, 0, 0, texture.getHeight()});
         blast = Gdx.audio.newSound(Gdx.files.internal("blast.ogg"));
         crash = Gdx.audio.newSound(Gdx.files.internal("crash.ogg"));
+    }
+
+    public int getArmor() {
+        return armor;
+    }
+
+    public void setArmor(int armor) {
+        this.armor = armor;
     }
 
     float getScaleX() {

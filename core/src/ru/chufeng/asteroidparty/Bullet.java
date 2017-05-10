@@ -5,19 +5,14 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Polygon;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 public class Bullet {
+    private static Texture texture;
     private Vector2 position;
     private float speed;
-    private static Texture texture;
     private boolean active;
     private Polygon polygon;
-
-    public boolean isActive() {
-        return active;
-    }
 
     public Bullet() {
         position = new Vector2(0.0f, 0.0f);
@@ -29,6 +24,11 @@ public class Bullet {
         polygon.setOrigin(texture.getWidth()/2, 0);
         polygon.setVertices(new float[]{-texture.getWidth()/2,0, texture.getWidth()/2,0, 0, texture.getHeight()});
     }
+
+    public boolean isActive() {
+        return active;
+    }
+
     public Polygon getRect() {
         return polygon;
     }
@@ -45,7 +45,7 @@ public class Bullet {
         active = false;
     }
 
-    public void setup(float x, float y) {
+    public void setup(float x, float y) {//TODO: hardcode
         position.x = x + 47;
         position.y = y + 130;
         polygon.setPosition(position.x+texture.getWidth()/2, position.y);

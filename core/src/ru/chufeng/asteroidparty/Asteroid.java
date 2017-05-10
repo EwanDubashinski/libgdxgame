@@ -19,6 +19,7 @@ public class Asteroid {
 
     private Vector2 position;
     private float speed; // vertical speed
+    private float baseSpeed = 2.0f; // To increase speed with increasing experience
     private float hSpeed; // horizontal speed
     private float rotationSpeed;
     private Texture texture;
@@ -38,6 +39,10 @@ public class Asteroid {
 
         //recreate();
         needsReCreate = true;
+    }
+
+    public void setBaseSpeed(float baseSpeed) {
+        this.baseSpeed = 2.0f + baseSpeed;
     }
 
     Vector2 getPosition() {
@@ -148,12 +153,12 @@ public class Asteroid {
         needsReCreate = false;
         position = new Vector2((float) (Math.random() * Gdx.graphics.getWidth()),
                 Gdx.graphics.getHeight() + (float) Math.random() * Gdx.graphics.getHeight() + 200);
-        speed = (2.0f + (float) Math.random() * 4.0f);
+        speed = (baseSpeed + (float) Math.random() * 4.0f);
         rotationSpeed = (float) Math.random() * 6.0f - 3;
         angle = (float)Math.random() * 360;
         scale = 0.7f + (float)Math.random() * 0.5f;
         //scale = 1;
-        hp = (int)(scale * texture.getHeight() * texture.getWidth() * 0.0001);
+        hp = (int) (scale * texture.getHeight() * texture.getWidth() * 0.0002);
         bonus = hp;
 
         polygon = new Polygon(getVertices());
