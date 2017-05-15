@@ -5,6 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Circle;
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad;
+import ru.chufeng.asteroidparty.GameEvent;
 
 import java.util.Observable;
 
@@ -41,25 +42,25 @@ public class TouchInput extends Observable implements Driver {
     public void update() {
         if (touchpad.getKnobPercentX() < 0) {
             setChanged();
-            parametrizedEvent.setEvent(EVENT.LEFT);
+            parametrizedEvent.setGameEvent(GameEvent.LEFT);
             parametrizedEvent.setParam(Math.abs(touchpad.getKnobPercentX()));
             super.notifyObservers(parametrizedEvent);
         }
         if (touchpad.getKnobPercentX() > 0) {
             setChanged();
-            parametrizedEvent.setEvent(EVENT.RIGHT);
+            parametrizedEvent.setGameEvent(GameEvent.RIGHT);
             parametrizedEvent.setParam(Math.abs(touchpad.getKnobPercentX()));
             super.notifyObservers(parametrizedEvent);
         }
         if (touchpad.getKnobPercentY() < 0) {
             setChanged();
-            parametrizedEvent.setEvent(EVENT.DOWN);
+            parametrizedEvent.setGameEvent(GameEvent.DOWN);
             parametrizedEvent.setParam(Math.abs(touchpad.getKnobPercentY()));
             super.notifyObservers(parametrizedEvent);
         }
         if (touchpad.getKnobPercentY() > 0) {
             setChanged();
-            parametrizedEvent.setEvent(EVENT.UP);
+            parametrizedEvent.setGameEvent(GameEvent.UP);
             parametrizedEvent.setParam(Math.abs(touchpad.getKnobPercentY()));
             super.notifyObservers(parametrizedEvent);
         }
@@ -69,15 +70,15 @@ public class TouchInput extends Observable implements Driver {
             //if (fireButton.contains(Gdx.input.getX(),Gdx.graphics.getHeight() - Gdx.input.getY())){
             //debugInfo = "inside 2nd if";
             setChanged();
-            super.notifyObservers(EVENT.FIRE);
+            super.notifyObservers(GameEvent.FIRE);
             //}
         } else {
             setChanged();
-            super.notifyObservers(EVENT.NOFIRE);
+            super.notifyObservers(GameEvent.NOFIRE);
         }
         if (Gdx.input.isKeyJustPressed(Input.Keys.BACK)) {
             setChanged();
-            super.notifyObservers(EVENT.PAUSE);
+            super.notifyObservers(GameEvent.PAUSE);
         }
     }
 

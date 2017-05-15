@@ -1,26 +1,28 @@
 package ru.chufeng.asteroidparty.input;
 
+import ru.chufeng.asteroidparty.GameEvent;
+
 /**
  * Created by Chufeng on 28.04.2017.
  */
 public class ParametrizedEvent {
-    private EVENT event;
+    private GameEvent gameEvent;
     private float param;
 
     public ParametrizedEvent() {
     }
 
-    public ParametrizedEvent(EVENT event, float param) {
-        this.event = event;
+    public ParametrizedEvent(GameEvent gameEvent, float param) {
+        this.gameEvent = gameEvent;
         this.param = param;
     }
 
-    public EVENT getEvent() {
-        return event;
+    public GameEvent getGameEvent() {
+        return gameEvent;
     }
 
-    public void setEvent(EVENT event) {
-        this.event = event;
+    public void setGameEvent(GameEvent gameEvent) {
+        this.gameEvent = gameEvent;
     }
 
     public float getParam() {

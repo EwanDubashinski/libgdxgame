@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Polygon;
 import com.badlogic.gdx.math.Vector2;
-import ru.chufeng.asteroidparty.input.EVENT;
 import ru.chufeng.asteroidparty.input.ParametrizedEvent;
 
 import java.util.Observable;
@@ -148,15 +147,15 @@ public class Hero implements Observer {
     public void update(Observable o, Object arg) {
         if (isAlive && momentumX < 1 && momentumY < 1) {
             float percent;
-            EVENT event;
+            GameEvent gameEvent;
             if (arg instanceof ParametrizedEvent) {
                 percent = ((ParametrizedEvent) arg).getParam();
-                event = ((ParametrizedEvent) arg).getEvent();
-            } else if (arg instanceof EVENT) {
+                gameEvent = ((ParametrizedEvent) arg).getGameEvent();
+            } else if (arg instanceof GameEvent) {
                 percent = 1;
-                event = (EVENT) arg;
+                gameEvent = (GameEvent) arg;
             } else return;
-            switch (event) { //TODO: hardcode
+            switch (gameEvent) { //TODO: hardcode
                 case UP:
                     if (position.y < Gdx.graphics.getHeight() - 100) position.y += speed * percent;
 //                    if (angle < 0) angle++;

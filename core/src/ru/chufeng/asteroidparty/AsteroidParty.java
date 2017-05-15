@@ -25,9 +25,9 @@ import ru.chufeng.asteroidparty.input.KBInput;
 import ru.chufeng.asteroidparty.input.TouchInput;
 
 public class AsteroidParty extends ApplicationAdapter {
-    static boolean pause = false;
-    static boolean startNew = false;
-    private final int ASTEROID_COUNT = 40;
+	//static boolean pause = false;
+	//static boolean startNew = false;
+	private final int ASTEROID_COUNT = 40;
     private boolean hardwareKeyboard;
     private boolean multiTouch;
     private ShapeRenderer shapeRenderer;
@@ -65,7 +65,7 @@ public class AsteroidParty extends ApplicationAdapter {
 		if (!hardwareKeyboard) assetManager.load("fire.png", Texture.class);
 
 		menu = new Menu();
-		menu.setMode(GameMode.NEW);
+		//menu.setMode(GameMode.NEW); first state assign execute in GameState class at lazy initialization
 		batch = new SpriteBatch();
 		bg = new Background();
 		hitpoints = new Label("", new Label.LabelStyle(new BitmapFont(), Color.WHITE));
@@ -135,14 +135,15 @@ public class AsteroidParty extends ApplicationAdapter {
 		multiplexer.addProcessor(stage);
 		Gdx.input.setInputProcessor(multiplexer);
 	}
-	private void reStart(){
+
+	protected void reStart() {
 		bullets = new Bullet[15];
 		for (int i = 0; i < bullets.length; i++) {
             bullets[i] = new Bullet();
         }
 		hero = new Hero(bullets);
 		driver.addObserver(hero);
-		driver.addObserver(menu);
+		driver.addObserver(GameState.getInstance());
 		asteroids = new Asteroid[ASTEROID_COUNT];
 		for (int i = 0; i < asteroids.length; i++) {
 			asteroids[i] = new Asteroid();
@@ -150,8 +151,9 @@ public class AsteroidParty extends ApplicationAdapter {
 		processingAsteroids();
 
 
-		startNew = false;
-		menu.setMode(GameMode.RUN);
+		//startNew = false;
+		//menu.setMode(GameMode.RUN); TODO: move to GameState class
+		GameState.getInstance().update(null, GameEvent.STARTED);
 		if (multiTouch) {
 		    touchpad.setVisible(true);
             fireImage.setVisible(true);
@@ -164,7 +166,7 @@ public class AsteroidParty extends ApplicationAdapter {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
 		bg.render(batch);
-		if (menu.getMode() != GameMode.NEW) {
+		if (GameState.getInstance().getMode() != GameMode.NEW) {
 			hero.render(batch);
 			for (int i = 0; i < ASTEROID_COUNT; i++) {
 				asteroids[i].render(batch);
@@ -174,16 +176,17 @@ public class AsteroidParty extends ApplicationAdapter {
                     bullet.render(batch);
             }
         }
-        if (menu.getMode() == GameMode.GAMEOVER) batch.draw(go, Gdx.graphics.getWidth()/2 - 200, Gdx.graphics.getHeight()/2 - 50);
-        menu.render(batch);
-        if (menu.getMode() != GameMode.PAUSE) {
-            update();
+		if (GameState.getInstance().getMode() == GameMode.GAMEOVER)
+			batch.draw(go, Gdx.graphics.getWidth() / 2 - 200, Gdx.graphics.getHeight() / 2 - 50);
+		menu.render(batch);
+		if (GameState.getInstance().getMode() != GameMode.PAUSE) {
+			update();
 		} else {
 			menu.update();
             driver.update();
         }
         batch.end();
-		if (menu.getMode() != GameMode.NEW && showPolygons) {
+		if (GameState.getInstance().getMode() != GameMode.NEW && showPolygons) {
 			shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
 			for (int i = 0; i < ASTEROID_COUNT; i++) {
 				asteroids[i].splineRender(shapeRenderer);
@@ -264,11 +267,11 @@ public class AsteroidParty extends ApplicationAdapter {
 
 	public void update() {
 		menu.update();
-		if (startNew) reStart();
+		if (GameState.getInstance().getMode() == GameMode.START) reStart();
 		bg.update();
 
-		if (menu.getMode() != GameMode.NEW) {
-            hero.immediateUpdate();
+		if (GameState.getInstance().getMode() != GameMode.NEW) {
+			hero.immediateUpdate();
             driver.update(); //input processing
 
 			processingAsteroids();
@@ -295,8 +298,9 @@ public class AsteroidParty extends ApplicationAdapter {
                     if (posA.y > posH.y) hero.setMomentumY(-5);
                     else hero.setMomentumY(5);
                     if (hero.isEndGame()) {
-                        menu.setMode(GameMode.GAMEOVER);
-                        if (multiTouch) {
+						//menu.setMode(GameMode.GAMEOVER);
+						GameState.getInstance().update(null, GameEvent.GAMEOVER);
+						if (multiTouch) {
                             touchpad.setVisible(false);
                             fireImage.setVisible(false);
                         }
